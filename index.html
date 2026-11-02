@@ -1,0 +1,621 @@
+```html
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ココロとカラダの寄り添いチェッカー</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans JP"', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            warm: {
+              50: '#FAF8F5',
+              100: '#F4EFEA',
+              200: '#E8DFD5',
+              700: '#6E5D4F',
+              800: '#4A3E35',
+            },
+            coral: {
+              50: '#FFF5F2',
+              100: '#FFE6E0',
+              500: '#E07A5F',
+              600: '#C86349',
+            },
+            sage: {
+              50: '#F4F7F4',
+              100: '#E3ECE3',
+              500: '#5C8A67',
+              600: '#4A7254',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #fbf9f6 0%, #f0f4f1 100%);
+      font-family: 'Noto Sans JP', 'Inter', sans-serif;
+    }
+    .fade-in {
+      animation: fadeIn 0.35s ease-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-3 sm:p-6 text-slate-800">
+
+  <!-- MAIN CONTAINER CARD -->
+  <div class="w-full max-w-md bg-warm-50/95 backdrop-blur-md rounded-3xl shadow-xl border border-white/80 p-5 sm:p-7 my-4 relative overflow-hidden">
+
+    <!-- HEADER -->
+    <header class="text-center mb-6">
+      <div class="inline-flex items-center gap-1.5 bg-warm-100 text-warm-700 text-xs font-bold px-3 py-1 rounded-full mb-2">
+        <span>🧡 ココロとカラダの寄り添いチェッカー</span>
+      </div>
+      <h1 id="app-title" class="text-xl sm:text-2xl font-bold text-warm-800">何が食べたい・飲みたい？</h1>
+      <p id="app-subtitle" class="text-xs text-slate-500 mt-1">あなたの「味わいたい気持ち」を否定せず受け止めます</p>
+    </header>
+
+    <!-- STEP 1: CATEGORY SELECTION -->
+    <div id="screen-step1" class="fade-in space-y-4">
+      <p class="text-xs sm:text-sm font-semibold text-center text-slate-600 mb-2">まずは、いまの気分を選んでください</p>
+
+      <button onclick="selectCategory('eat')" class="w-full p-5 bg-white hover:bg-coral-50/60 border border-coral-100 rounded-2xl flex items-center justify-between group transition-all duration-200 shadow-sm hover:shadow-md">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-2xl bg-coral-500/10 text-coral-600 flex items-center justify-center text-2xl group-hover:scale-105 transition-transform">
+            🍔
+          </div>
+          <div class="text-left">
+            <div class="font-bold text-slate-800 text-base">何か食べたい</div>
+            <div class="text-xs text-slate-500 mt-0.5">スイーツ・お菓子・ご飯もの・おつまみなど</div>
+          </div>
+        </div>
+        <svg class="w-5 h-5 text-coral-500 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+      </button>
+
+      <button onclick="selectCategory('drink')" class="w-full p-5 bg-white hover:bg-sage-50/60 border border-sage-100 rounded-2xl flex items-center justify-between group transition-all duration-200 shadow-sm hover:shadow-md">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-2xl bg-sage-500/10 text-sage-600 flex items-center justify-center text-2xl group-hover:scale-105 transition-transform">
+            ☕
+          </div>
+          <div class="text-left">
+            <div class="font-bold text-slate-800 text-base">何か飲みたい</div>
+            <div class="text-xs text-slate-500 mt-0.5">コーヒー・ジュース・お茶・スープなど</div>
+          </div>
+        </div>
+        <svg class="w-5 h-5 text-sage-500 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+      </button>
+    </div>
+
+    <!-- STEP 2: SPECIFIC ITEM IDENTIFICATION -->
+    <div id="screen-step2" class="hidden fade-in space-y-5">
+      <div>
+        <p class="text-xs sm:text-sm font-bold text-slate-700 mb-1" id="step2-instruction">
+          具体的に「何が」一番食べたいですか？
+        </p>
+        <p class="text-xs text-slate-400">タグをタップするか、下に直接入力してください</p>
+      </div>
+
+      <!-- Quick Select Tags -->
+      <div id="item-tags-container" class="flex flex-wrap gap-2">
+        <!-- JS filled -->
+      </div>
+
+      <!-- Free Text Input -->
+      <div class="space-y-2 pt-1">
+        <label class="block text-xs font-bold text-slate-600">具体的なメニュー名を入力：</label>
+        <div class="relative">
+          <input type="text" id="custom-item-input" placeholder="例：コーヒー、チョコレート、ポテトチップス" 
+            class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-coral-500/50 focus:border-coral-500 transition-all shadow-sm"
+            oninput="handleInputText(this.value)">
+        </div>
+      </div>
+
+      <!-- Target Display Banner -->
+      <div id="selected-preview-box" class="hidden bg-warm-100 border border-warm-200 p-3 rounded-xl flex items-center justify-between text-xs text-warm-800">
+        <span>選択中: <strong id="selected-item-text" class="text-sm font-bold text-coral-600"></strong></span>
+        <button onclick="clearSelectedItem()" class="text-slate-400 hover:text-slate-600">クリア</button>
+      </div>
+
+      <!-- Confirm Button -->
+      <div class="pt-2">
+        <button id="btn-lock-item" onclick="confirmItem()" disabled class="w-full py-3.5 bg-slate-300 text-slate-500 font-bold rounded-xl text-sm transition-all duration-200 cursor-not-allowed">
+          これを特定して進む
+        </button>
+        <button onclick="goToStep(1)" class="w-full text-center text-xs text-slate-400 hover:text-slate-600 py-2.5 mt-1 transition-colors">
+          ← カテゴリ選びに戻る
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 3: 100% EMPATHETIC VALIDATION -->
+    <div id="screen-step3" class="hidden fade-in space-y-5">
+      
+      <!-- Highlight Card -->
+      <div class="bg-gradient-to-br from-coral-50 to-warm-100 border-2 border-coral-200 p-5 rounded-2xl text-center shadow-sm relative overflow-hidden">
+        <div class="text-xs font-bold text-coral-600 bg-coral-100/80 inline-block px-3 py-0.5 rounded-full mb-2">
+          特定されたメニュー
+        </div>
+        <div id="val-target-name" class="text-2xl font-black text-slate-800 tracking-tight my-1">
+          メニュー名
+        </div>
+      </div>
+
+      <!-- Empathetic Validation Text -->
+      <div class="bg-white border border-warm-200 p-5 rounded-2xl shadow-sm space-y-3">
+        <div class="flex items-start gap-3">
+          <span class="text-2xl">💖</span>
+          <div class="space-y-2 text-xs sm:text-sm text-slate-700 leading-relaxed">
+            <p class="font-bold text-slate-800 text-sm sm:text-base">
+              「<span id="val-target-inline" class="text-coral-600"></span>」が<span id="val-action-word">欲しい</span>んですね！
+            </p>
+            <p>
+              あの味や香り、本当に美味しいですよね。いま無性にその気分になるの、すごくよく分かります。
+            </p>
+            <p class="text-slate-500 text-xs bg-warm-50 p-2.5 rounded-lg border border-warm-100">
+              何かを欲すること自体、とても自然で当たり前の感情です。自分を責める必要はまったくありませんよ。
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Proceed to gentle self-check -->
+      <div class="pt-2 space-y-2">
+        <button onclick="startSelfCheck()" class="w-full py-3.5 bg-coral-500 hover:bg-coral-600 text-white font-bold rounded-xl text-sm transition-all shadow-md active:scale-[0.99]">
+          自分の状態を少しだけ観察してみる →
+        </button>
+        <button onclick="goToStep(2)" class="w-full text-center text-xs text-slate-400 hover:text-slate-600 py-1 transition-colors">
+          メニューを選び直す
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 4: ADAPTIVE QUESTIONING -->
+    <div id="screen-step4" class="hidden fade-in space-y-5">
+      <div>
+        <div class="flex justify-between text-xs font-semibold text-slate-400 mb-1">
+          <span id="quiz-badge-label">ココロとカラダのチェック</span>
+          <span id="quiz-step-count">1 / 2</span>
+        </div>
+        <div class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+          <div id="quiz-progress-bar" class="h-full bg-coral-500 transition-all duration-300 w-1/2"></div>
+        </div>
+      </div>
+
+      <div class="bg-white border border-warm-200 p-4 rounded-2xl shadow-sm">
+        <!-- Luxury vs Staple indicator banner -->
+        <div id="item-type-tag" class="text-[11px] font-bold px-2.5 py-0.5 rounded-md inline-block mb-2 bg-warm-100 text-warm-800">
+          分類
+        </div>
+
+        <h2 id="quiz-question-title" class="text-sm sm:text-base font-bold text-slate-800 leading-snug mb-3">
+          質問タイトル
+        </h2>
+        <div id="quiz-options-container" class="space-y-2.5">
+          <!-- JS filled -->
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 5: SYMPATHETIC RESULT & MINDFUL GUIDE -->
+    <div id="screen-step5" class="hidden fade-in space-y-5">
+      
+      <!-- Result Card -->
+      <div id="res-badge-box" class="p-5 rounded-2xl text-center border shadow-sm">
+        <span id="res-badge" class="inline-block px-3 py-1 rounded-full text-xs font-bold mb-2">
+          判定結果
+        </span>
+        <h2 id="res-title" class="text-base sm:text-lg font-bold text-slate-800 mb-1">
+          結果タイトル
+        </h2>
+        <p id="res-desc" class="text-xs text-slate-600 leading-relaxed">
+          説明文
+        </p>
+      </div>
+
+      <!-- Personalized Advice -->
+      <div class="bg-white border border-warm-200 p-5 rounded-2xl shadow-sm space-y-3">
+        <div class="flex items-center gap-2 border-b border-warm-100 pb-2">
+          <span class="text-base">💡</span>
+          <h3 class="text-xs sm:text-sm font-bold text-slate-800">
+            「<span id="res-target-item" class="text-coral-600"></span>」を最高に味わうガイド
+          </h3>
+        </div>
+
+        <p id="res-advice-text" class="text-xs sm:text-sm text-slate-700 leading-relaxed">
+          アドバイス文章が入ります
+        </p>
+
+        <!-- Mindful Eating Tip -->
+        <div class="bg-warm-50 p-3 rounded-xl border border-warm-200 text-xs text-warm-800 leading-relaxed">
+          <span class="font-bold block mb-0.5">✨ 満足感を最大化するコツ</span>
+          <p id="res-mindful-tip">一口目を10秒間、舌の上で転がすようにじっくり味わってみてください。</p>
+        </div>
+      </div>
+
+      <!-- Breathing Timer Tool -->
+      <div id="breathing-tool-box" class="space-y-2 bg-sage-50 border border-sage-200 p-4 rounded-2xl">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-xs font-bold text-sage-800">🫁 1分間のマインドフルタイマー</div>
+            <div class="text-[11px] text-sage-600">口にする前、または最中に心をリセット</div>
+          </div>
+          <button id="btn-start-breath" onclick="toggleBreathing()" class="text-xs bg-sage-600 hover:bg-sage-700 text-white font-bold px-3 py-1.5 rounded-lg transition-colors">
+            スタート
+          </button>
+        </div>
+        <div id="breath-timer-display" class="hidden text-center py-3 bg-white/90 rounded-xl border border-sage-200 mt-2">
+          <div id="breath-status-text" class="text-xs text-sage-700 font-medium mb-1">息をゆっくり吐き出しましょう</div>
+          <div id="breath-time-number" class="text-2xl font-bold text-sage-600">01:00</div>
+        </div>
+      </div>
+
+      <!-- Reset Action -->
+      <div class="pt-2">
+        <button onclick="resetApp()" class="w-full py-3.5 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl text-xs sm:text-sm transition-all shadow-md">
+          最初からもう一度やってみる
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- SCRIPT LOGIC -->
+  <script>
+    // Preset Quick Tags
+    const presetTags = {
+      eat: ['チョコレート', 'ポテトチップス', 'クッキー・ケーキ', 'アイス', 'ラーメン', 'おにぎり', 'ハンバーガー'],
+      drink: ['コーヒー', 'カフェオレ', 'お茶・紅茶', 'コーラ・炭酸飲料', 'お酒・ビール', 'スープ']
+    };
+
+    // Luxury / Snack Keywords List (嗜好品判定用)
+    const luxuryKeywords = [
+      'コーヒー', '珈琲', 'カフェ', 'チョコ', 'チョコレート', 'クッキー', 'ケーキ', 'アイス', 'スナック', 
+      'ポテトチップス', 'ポテチ', 'お菓子', '和菓子', 'あめ', 'キャンディ', '煎餅', 'せんべい', '紅茶', 'お茶', 
+      'ジュース', 'コーラ', 'サイダー', '炭酸', 'ビール', '酒', 'ハイボール', 'ワイン', 'ココア'
+    ];
+
+    // Helper to test if item is Luxury (嗜好品) vs Staple (主食)
+    function isLuxuryItem(itemName) {
+      if (!itemName) return false;
+      const lower = itemName.toLowerCase();
+      return luxuryKeywords.some(kw => lower.includes(kw));
+    }
+
+    // Adaptive Question Sets
+    function getQuestions(itemName, category) {
+      const isLuxury = isLuxuryItem(itemName);
+
+      if (isLuxury) {
+        // LUXURY QUESTIONS (NO MEAL TIMING QUESTIONS!)
+        return {
+          isLuxury: true,
+          questions: [
+            {
+              title: `今、どのようなお気持ち・目的で「${itemName}」を求めていますか？`,
+              options: [
+                { text: "ホッと一息ついてリラックス・気分転換したい", type: "emotional" },
+                { text: "頭をスッキリさせたい・集中力を高めたい・シャキッとしたい", type: "emotional" },
+                { text: "口寂しい／疲れていて手軽な刺激や甘みが欲しい", type: "emotional" }
+              ]
+            },
+            {
+              title: "直前の心やカラダの状態はどんな感じですか？",
+              options: [
+                { text: "作業や仕事がひと段落して、切り替えのタイミング", type: "physical" },
+                { text: "少しイライラ、焦り、疲れ、ストレスなどを感じている", type: "emotional" }
+              ]
+            }
+          ]
+        };
+      } else {
+        // STAPLE MEAL QUESTIONS (Ask physical hunger vs emotional craving)
+        return {
+          isLuxury: false,
+          questions: [
+            {
+              title: `「${itemName}」が欲しくなったきっかけは？`,
+              options: [
+                { text: "お腹がグーと鳴るなど、身体がしっかり空腹を感じている", type: "physical" },
+                { text: "画像を見たり嫌なことがあったりして、急に無性に食べたくなった", type: "emotional" }
+              ]
+            },
+            {
+              title: "前回の食事からの経過や、お腹の状態は？",
+              options: [
+                { text: "前回の食事から4時間以上経っていて、胃が空っぽ", type: "physical" },
+                { text: "まだあまり時間は経っていない／お腹はそれほど空いていない", type: "emotional" }
+              ]
+            }
+          ]
+        };
+      }
+    }
+
+    // Application State
+    let currentCategory = 'eat';
+    let selectedItem = '';
+    let currentQuizStep = 0;
+    let quizScores = { physical: 0, emotional: 0 };
+    let breathTimer = null;
+    let activeQuestions = [];
+
+    // Screen Management
+    function goToStep(stepNumber) {
+      document.getElementById('screen-step1').classList.add('hidden');
+      document.getElementById('screen-step2').classList.add('hidden');
+      document.getElementById('screen-step3').classList.add('hidden');
+      document.getElementById('screen-step4').classList.add('hidden');
+      document.getElementById('screen-step5').classList.add('hidden');
+
+      document.getElementById(`screen-step${stepNumber}`).classList.remove('hidden');
+
+      const title = document.getElementById('app-title');
+      const subtitle = document.getElementById('app-subtitle');
+
+      if (stepNumber === 1) {
+        title.innerText = "何が食べたい・飲みたい？";
+        subtitle.innerText = "あなたの「味わいたい気持ち」を否定せず受け止めます";
+      } else if (stepNumber === 2) {
+        title.innerText = "メニューの特定";
+        subtitle.innerText = "具体的に今、いちばん頭に浮かんでいるものを教えてね";
+      } else if (stepNumber === 3) {
+        title.innerText = "気持ちの受容";
+        subtitle.innerText = "その欲求を一度100%肯定します";
+      } else if (stepNumber === 4) {
+        title.innerText = "ココロとカラダのチェック";
+        subtitle.innerText = "いまのあなたの状態をやさしく見つめます";
+      } else if (stepNumber === 5) {
+        title.innerText = "チェック結果とガイド";
+        subtitle.innerText = "自分を大切に味わうためのヒント";
+      }
+    }
+
+    // STEP 1: Select Category
+    function selectCategory(cat) {
+      currentCategory = cat;
+      selectedItem = '';
+      document.getElementById('custom-item-input').value = '';
+
+      document.getElementById('step2-instruction').innerText = cat === 'eat' 
+        ? "具体的に「何が」一番食べたいですか？" 
+        : "具体的に「何が」一番飲みたいですか？";
+
+      const tagsContainer = document.getElementById('item-tags-container');
+      tagsContainer.innerHTML = '';
+
+      presetTags[cat].forEach(tag => {
+        const btn = document.createElement('button');
+        btn.className = "px-3.5 py-2 bg-white hover:bg-warm-100 border border-warm-200 rounded-xl text-xs font-semibold text-slate-700 transition-all shadow-sm hover:border-warm-700 active:scale-95";
+        btn.innerText = tag;
+        btn.onclick = () => selectTag(tag);
+        tagsContainer.appendChild(btn);
+      });
+
+      updateLockState();
+      goToStep(2);
+    }
+
+    // STEP 2: Tag/Input Handling
+    function selectTag(tag) {
+      selectedItem = tag;
+      document.getElementById('custom-item-input').value = tag;
+      updateLockState();
+    }
+
+    function handleInputText(text) {
+      selectedItem = text.trim();
+      updateLockState();
+    }
+
+    function clearSelectedItem() {
+      selectedItem = '';
+      document.getElementById('custom-item-input').value = '';
+      updateLockState();
+    }
+
+    function updateLockState() {
+      const lockBtn = document.getElementById('btn-lock-item');
+      const previewBox = document.getElementById('selected-preview-box');
+      const previewText = document.getElementById('selected-item-text');
+
+      if (selectedItem) {
+        lockBtn.disabled = false;
+        lockBtn.className = "w-full py-3.5 bg-coral-500 hover:bg-coral-600 text-white font-bold rounded-xl text-sm transition-all shadow-md active:scale-[0.99] cursor-pointer";
+        previewBox.classList.remove('hidden');
+        previewText.innerText = selectedItem;
+      } else {
+        lockBtn.disabled = true;
+        lockBtn.className = "w-full py-3.5 bg-slate-300 text-slate-500 font-bold rounded-xl text-sm transition-all duration-200 cursor-not-allowed";
+        previewBox.classList.add('hidden');
+      }
+    }
+
+    // STEP 3: Confirm Item & Show Validation
+    function confirmItem() {
+      if (!selectedItem) return;
+
+      const actionWord = currentCategory === 'eat' ? '食べたい' : '飲みたい';
+      document.getElementById('val-target-name').innerText = selectedItem;
+      document.getElementById('val-target-inline').innerText = selectedItem;
+      document.getElementById('val-action-word').innerText = actionWord;
+
+      goToStep(3);
+    }
+
+    // STEP 4: Start Adaptive Quiz
+    function startSelfCheck() {
+      currentQuizStep = 0;
+      quizScores = { physical: 0, emotional: 0 };
+
+      const qData = getQuestions(selectedItem, currentCategory);
+      activeQuestions = qData.questions;
+
+      const tagElement = document.getElementById('item-type-tag');
+      if (qData.isLuxury) {
+        tagElement.innerText = "🍵 嗜好品・リフレッシュモード（気分のチェック）";
+        tagElement.className = "text-[11px] font-bold px-2.5 py-1 rounded-md inline-block mb-2 bg-sage-100 text-sage-800 border border-sage-200";
+      } else {
+        tagElement.innerText = "🍱 ご飯もの・食事モード（お腹のチェック）";
+        tagElement.className = "text-[11px] font-bold px-2.5 py-1 rounded-md inline-block mb-2 bg-coral-100 text-coral-800 border border-coral-200";
+      }
+
+      goToStep(4);
+      renderQuizQuestion();
+    }
+
+    function renderQuizQuestion() {
+      const q = activeQuestions[currentQuizStep];
+
+      document.getElementById('quiz-step-count').innerText = `${currentQuizStep + 1} / ${activeQuestions.length}`;
+      document.getElementById('quiz-progress-bar').style.width = `${((currentQuizStep + 1) / activeQuestions.length) * 100}%`;
+      document.getElementById('quiz-question-title').innerText = q.title;
+
+      const optionsContainer = document.getElementById('quiz-options-container');
+      optionsContainer.innerHTML = '';
+
+      q.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = "w-full p-3.5 text-left bg-warm-50 hover:bg-warm-100 border border-warm-200 rounded-xl text-xs sm:text-sm font-medium text-slate-800 transition-all leading-relaxed active:scale-[0.99]";
+        btn.innerText = opt.text;
+        btn.onclick = () => handleQuizAnswer(opt.type);
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    function handleQuizAnswer(type) {
+      quizScores[type]++;
+      currentQuizStep++;
+
+      if (currentQuizStep < activeQuestions.length) {
+        renderQuizQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    // STEP 5: Results & Mindful Guidance
+    function showResults() {
+      goToStep(5);
+
+      const isLuxury = isLuxuryItem(selectedItem);
+      const isPhysical = quizScores.physical > quizScores.emotional;
+
+      const badgeBox = document.getElementById('res-badge-box');
+      const badge = document.getElementById('res-badge');
+      const title = document.getElementById('res-title');
+      const desc = document.getElementById('res-desc');
+      const targetItemDisplay = document.getElementById('res-target-item');
+      const adviceText = document.getElementById('res-advice-text');
+      const mindfulTip = document.getElementById('res-mindful-tip');
+
+      targetItemDisplay.innerText = selectedItem;
+
+      if (isLuxury) {
+        // LUXURY RESULT
+        badgeBox.className = "p-5 rounded-2xl text-center border bg-sage-50/80 border-sage-200";
+        badge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold mb-2 bg-sage-100 text-sage-800 border border-sage-200";
+        badge.innerText = "☕ 気持ちの切り替え・リフレッシュタイム";
+
+        title.innerText = `「${selectedItem}」でホッと一息つきましょう`;
+        desc.innerText = `がまんする必要は全くありません！頑張っている自分への大切なリフレッシュタイムです。`;
+
+        adviceText.innerText = `今のあなたには「${selectedItem}」の香りと味わいが最高の癒やしになります。罪悪感を持たず、一口一口を五感で思い切り味わってください。`;
+        mindfulTip.innerText = `口に含む前に香りをゆっくり嗅いで、1分間スマホを置いて一口目をじっくり楽しんでみてください。`;
+      } else if (isPhysical) {
+        // STAPLE PHYSICAL RESULT
+        badgeBox.className = "p-5 rounded-2xl text-center border bg-sage-50/80 border-sage-200";
+        badge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold mb-2 bg-sage-100 text-sage-800 border border-sage-200";
+        badge.innerText = "🍱 生理的な空腹サイン";
+
+        title.innerText = `身体がエネルギーを求めています`;
+        desc.innerText = `身体の正常な欲求です。「${selectedItem}」を美味しくいただきましょう！`;
+
+        adviceText.innerText = `美味しく「${selectedItem}」を食べる準備をしましょう。お腹を満たしてパワーをチャージしてください。`;
+        mindfulTip.innerText = `しっかり噛んで飲み込むことで、胃が満たされていく感覚を意識してみましょう。`;
+      } else {
+        // STAPLE EMOTIONAL RESULT
+        badgeBox.className = "p-5 rounded-2xl text-center border bg-coral-50/80 border-coral-200";
+        badge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold mb-2 bg-coral-100 text-coral-800 border border-coral-200";
+        badge.innerText = "🧡 心の安心感を求めているサイン";
+
+        title.innerText = `心が「ホッとしたい」と感じているかも`;
+        desc.innerText = `ストレスや疲労から脳が癒やしを求めている状態です。「ダメ」と禁止する必要はありません。`;
+
+        adviceText.innerText = `食べるなら「120%の満足感」を得られるように味わうのがコツです。ダラダラ食べず、しっかり味わうことで心が満たされます。`;
+        mindfulTip.innerText = `一口目を10秒間目を閉じて味わうか、下の深呼吸タイマーで心を落ち着かせてから召し上がってみてください。`;
+      }
+
+      stopBreathing();
+    }
+
+    // Breathing Timer Handler
+    function toggleBreathing() {
+      const display = document.getElementById('breath-timer-display');
+      const btn = document.getElementById('btn-start-breath');
+
+      if (display.classList.contains('hidden')) {
+        display.classList.remove('hidden');
+        btn.innerText = "リセット";
+        startBreathing();
+      } else {
+        stopBreathing();
+      }
+    }
+
+    function startBreathing() {
+      let timeLeft = 60;
+      const status = document.getElementById('breath-status-text');
+      const number = document.getElementById('breath-time-number');
+
+      clearInterval(breathTimer);
+
+      breathTimer = setInterval(() => {
+        timeLeft--;
+        if (timeLeft % 10 >= 5) {
+          status.innerText = "ゆっくり息を吐き出します...";
+        } else {
+          status.innerText = "静かに息を吸い込みます...";
+        }
+
+        const sec = timeLeft < 10 ? '0' + timeLeft : timeLeft;
+        number.innerText = `00:${sec}`;
+
+        if (timeLeft <= 0) {
+          clearInterval(breathTimer);
+          status.innerText = "1分間の深呼吸が完了しました。心が落ち着きましたか？";
+          number.innerText = "完了";
+        }
+      }, 1000);
+    }
+
+    function stopBreathing() {
+      clearInterval(breathTimer);
+      const display = document.getElementById('breath-timer-display');
+      const btn = document.getElementById('btn-start-breath');
+      if (display) display.classList.add('hidden');
+      if (btn) btn.innerText = "スタート";
+    }
+
+    function resetApp() {
+      stopBreathing();
+      selectedItem = '';
+      document.getElementById('custom-item-input').value = '';
+      goToStep(1);
+    }
+  </script>
+</body>
+</html>
+```
